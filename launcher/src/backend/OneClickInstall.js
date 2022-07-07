@@ -25,7 +25,7 @@ export class OneClickInstall {
     this.serviceManager = new ServiceManager(this.nodeConnection)
     await this.nodeConnection.findStereumSettings()
     if (this.nodeConnection.settings === undefined) {
-      await this.nodeConnection.sshService.exec(` mkdir /etc/stereum &&
+      await this.nodeConnection.sshService.exec(StringUtils.suWrap(`mkdir /etc/stereum &&
       echo "stereum_settings:
       settings:
         controls_install_path: ${this.installDir || '/opt/stereum'}
@@ -34,7 +34,7 @@ export class OneClickInstall {
           lane: stable
           unattended:
             install: false
-    " > /etc/stereum/stereum.yaml`)
+    " > /etc/stereum/stereum.yaml`))
       await this.nodeConnection.findStereumSettings()
     }
     return await this.nodeConnection.prepareStereumNode(this.nodeConnection.settings.stereum.settings.controls_install_path)
@@ -185,8 +185,8 @@ export class OneClickInstall {
       //generate validator api-token
       const valDir = (this.beaconService.volumes.find(vol => vol.servicePath === '/opt/app/validators')).destinationPath
       const token = StringUtils.createRandomString()
-      await this.nodeConnection.sshService.exec(`sudo mkdir -p ${valDir}`)
-      await this.nodeConnection.sshService.exec(`sudo echo ${token} > ${valDir}/api-token.txt`)
+      await this.nodeConnection.sshService.exec(StringUtils.suWrap(`mkdir -p ${valDir}`))
+      await this.nodeConnection.sshService.exec(StringUtils.suWrap(`echo ${token} > ${valDir}/api-token.txt`))
       prometheusJobs.push(this.beaconService)
     }
 
@@ -203,10 +203,10 @@ export class OneClickInstall {
       //keystore
       const dataDir = (this.beaconService.volumes.find(vol => vol.servicePath === '/opt/app/data')).destinationPath
       const password = StringUtils.createRandomString()
-      await this.nodeConnection.sshService.exec('sudo apt install -y openjdk-8-jre-headless')
-      await this.nodeConnection.sshService.exec(`sudo mkdir -p ${dataDir}`)
-      await this.nodeConnection.sshService.exec(`sudo echo ${password} > ${dataDir}/teku_api_password.txt`)
-      await this.nodeConnection.sshService.exec(`sudo bash -c "cd ${dataDir} && keytool -genkeypair -keystore teku_api_keystore -storetype PKCS12 -storepass ${password} -keyalg RSA -keysize 2048 -validity 109500 -dname 'CN=localhost, OU=MyCompanyUnit, O=MyCompany, L=MyCity, ST=MyState, C=AU' -ext san=dns:localhost,ip:127.0.0.1"`)
+      await this.nodeConnection.sshService.exec(StringUtils.suWrap('apt install -y openjdk-8-jre-headless'))
+      await this.nodeConnection.sshService.exec(StringUtils.suWrap(`mkdir -p ${dataDir}`))
+      await this.nodeConnection.sshService.exec(StringUtils.suWrap(`echo ${password} > ${dataDir}/teku_api_password.txt`))
+      await this.nodeConnection.sshService.exec(StringUtils.suWrap(`cd ${dataDir} && keytool -genkeypair -keystore teku_api_keystore -storetype PKCS12 -storepass ${password} -keyalg RSA -keysize 2048 -validity 109500 -dname 'CN=localhost, OU=MyCompanyUnit, O=MyCompany, L=MyCity, ST=MyState, C=AU' -ext san=dns:localhost,ip:127.0.0.1`))
       prometheusJobs.push(this.beaconService)
     }
 
@@ -252,7 +252,7 @@ export class OneClickInstall {
         const configFile = new YAML.Document()
         configFile.contents = ssvConfig
         const escapedConfigFile = StringUtils.escapeStringForShell(configFile.toString())
-        this.nodeConnection.sshService.exec(`sudo mkdir -p ${dataDir} && sudo echo ${escapedConfigFile} > ${dataDir}/config.yaml`)
+        this.nodeConnection.sshService.exec(StringUtils.suWrap(`mkdir -p ${dataDir} && sudo echo ${escapedConfigFile} > ${dataDir}/config.yaml`))
       }
       return configs
     }

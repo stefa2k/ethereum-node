@@ -1,6 +1,7 @@
 import { SSHService } from './sshservice.js'
 import * as axios from 'axios'
 import * as yaml from 'js-yaml'
+import { StringUtils } from './backend/StringUtils.js'
 
 const log = require('electron-log')
 
@@ -14,7 +15,7 @@ export class StereumService {
     log.info('  checking stereum')
     let exists = false
     try {
-      const resp = await this.sshService.exec('sudo ls /etc/stereum/ethereum2.yaml')
+      const resp = await this.sshService.exec(StringUtils.suWrap('ls /etc/stereum/ethereum2.yaml'))
       exists = resp.rc == 0
     } catch (ex) {
       log.error("can't access ethereum2.yaml")
@@ -47,7 +48,7 @@ export class StereumService {
   async check_controlcenter () {
     // check if /etc/stereum/ethereum2.yaml does not exist
     log.info('  checking stereum controlcenter')
-    const resp = await this.sshService.exec('sudo cat /opt/stereum/controlcenter/.env')
+    const resp = await this.sshService.exec(StringUtils.suWrap('cat /opt/stereum/controlcenter/.env'))
     log.info('resp.rc: ' + resp.rc)
     if (resp.rc == 0) {
       const out = resp.stdout
@@ -69,7 +70,7 @@ export class StereumService {
   async check_controlcenter_web () {
     // check if /etc/stereum/ethereum2.yaml does not exist
     log.info('  checking stereum web cc')
-    const resp = await this.sshService.exec('sudo docker ps | grep control')
+    const resp = await this.sshService.exec(StringUtils.suWrap('docker ps | grep control'))
     if (resp.rc == 0) {
       return resp.stdout.split('   ')[1].split(':')[1]
     }
@@ -79,7 +80,7 @@ export class StereumService {
   async get_stereum_release () {
     // check if /etc/stereum/ethereum2.yaml does not exist
     log.info('  getting installed stereum version')
-    const resp = await this.sshService.exec('sudo cat /etc/stereum/ethereum2.yaml')
+    const resp = await this.sshService.exec(StringUtils.suWrap('cat /etc/stereum/ethereum2.yaml'))
     if (resp.rc == 0) {
       const yaml_doc = yaml.load(resp.stdout)
       return yaml_doc.stereum_version_tag
@@ -128,7 +129,7 @@ export class StereumService {
   async launch_bundle (existing_release, port) {
     return new Promise(async (resolve, reject) => {
       log.info('  launching installation of stereum release ' + existing_release + ' This can take a few minutes, your browser will open up upon completion with the installation wizard!')
-      const resp = await this.sshService.exec('chmod +x /tmp/base_installer.run && /tmp/base_installer.run --extra-vars=existing_release="' + existing_release + '" --extra-vars=stereum_ssh_port="' + port + '"')
+      const resp = await this.sshService.exec(StringUtils.suWrap('chmod +x /tmp/base_installer.run && /tmp/base_installer.run --extra-vars=existing_release="' + existing_release + '" --extra-vars=stereum_ssh_port="' + port + '"'))
       if (resp.rc == 0) {
         log.info('    successfully launched base-installer')
         resolve(resp)
@@ -144,12 +145,12 @@ export class StereumService {
     return new Promise(async (resolve, reject) => {
       let commandString = ''
       log.info('checking requirements for base-installation')
-      let resp = await this.sshService.exec('which curl')
+      let resp = await this.sshService.exec(StringUtils.suWrap('which curl'))
       if (resp.stdout.length > 0) {
         log.info('  found curl at ' + resp.stdout.replace('\n', ''))
         commandString = 'curl --silent https://stereum.net/downloads/base-installer-' + release + '.run --output /tmp/base_installer.run'
       }
-      resp = await this.sshService.exec('which wget')
+      resp = await this.sshService.exec(StringUtils.suWrap('which wget'))
       if (resp.stdout.length > 0) {
         log.info('  found wget at ' + resp.stdout.replace('\n', ''))
         commandString = 'wget https://stereum.net/downloads/base-installer-' + release + '.run -O /tmp/base_installer.run'
@@ -175,7 +176,7 @@ export class StereumService {
 
   async setApikey (apikey) {
     return new Promise(async (resolve, reject) => {
-      const resp = await this.sshService.exec("sudo bash -c \"echo '" + apikey + "' > /etc/stereum/cc-apikey\"", "sudo bash -c \"echo '<apikey>' > /etc/stereum/cc-apikey\"")
+      const resp = await this.sshService.exec(StringUtils.suWrap("echo '" + apikey + "' > /etc/stereum/cc-apikey"), "echo '<apikey>' > /etc/stereum/cc-apikey")
       if (resp.rc == 0) {
         log.info('    successfully set apikey')
         resolve(resp)

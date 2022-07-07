@@ -26,4 +26,17 @@ export class StringUtils {
     }
     return result
   }
+
+  static suWrap(shellCmd) {
+    log.debug('received: ', shellCmd)
+
+    let wrappedShellCmd = ''
+    if (shellCmd) {
+      wrappedShellCmd = 'sudo bash -c "' + shellCmd.replace(/(["\\])/g, '\\$1') + '"'
+    }
+
+    log.debug('wrapped: ', wrappedShellCmd)
+
+    return wrappedShellCmd
+  }
 }

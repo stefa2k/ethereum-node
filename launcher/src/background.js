@@ -14,6 +14,7 @@ import promiseIpc from "electron-promise-ipc";
 import path from "path";
 import { readFileSync } from "fs";
 import url from "url";
+import { StringUtils } from "./backend/StringUtils.js";
 const isDevelopment = process.env.NODE_ENV !== "production";
 const stereumService = new StereumService();
 const storageService = new StorageService();
@@ -127,7 +128,7 @@ promiseIpc.on("checkStereumInstallation", async () => {
     let services;
     let settings;
     try {
-      settings = await nodeConnection.sshService.exec("sudo ls /etc/stereum");
+      settings = await nodeConnection.sshService.exec(StringUtils.suWrap("ls /etc/stereum"));
       services = await nodeConnection.listServicesConfigurations();
     } catch {
       services = [];
@@ -220,7 +221,7 @@ async function createWindow() {
 
   win.on('close', (e) => {
     if (app.showExitPrompt) {
-        e.preventDefault() // Prevents the window from closing 
+        e.preventDefault() // Prevents the window from closing
         const response = dialog.showMessageBoxSync({
             type: 'question',
             buttons: ['Yes', 'No'],

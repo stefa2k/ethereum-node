@@ -11,3 +11,19 @@ test('escapeStringForShell simple String', () => {
 test('escapeStringForShell new line', () => {
   expect(StringUtils.escapeStringForShell('this\nnext-line')).toEqual('"this\nnext-line"')
 })
+
+test('suWrap simple test', () => {
+  expect(StringUtils.suWrap('cd /etc')).toEqual('sudo bash -c "cd /etc"')
+})
+
+test('suWrap escape double quotes', () => {
+  expect(StringUtils.suWrap('cd "/etc"')).toEqual('sudo bash -c "cd \\"/etc\\""')
+})
+
+test('suWrap single quotes unescaped', () => {
+  expect(StringUtils.suWrap('cd \'/etc\'')).toEqual('sudo bash -c "cd \'/etc\'"')
+})
+
+test('suWrap escape backslash', () => {
+  expect(StringUtils.suWrap('echo foo\\bar')).toEqual('sudo bash -c "echo foo\\\\bar"')
+})
