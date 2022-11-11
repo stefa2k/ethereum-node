@@ -144,10 +144,11 @@ export class NodeConnection {
         try {
           installPkgResult = await this.sshService.exec(
             "apt update &&\
-                    apt install -y software-properties-common &&\
+                    apt install -y software-properties-common aptitude &&\
                     add-apt-repository --yes --update ppa:ansible/ansible &&\
                     apt update &&\
                     DEBIAN_FRONTEND=noninteractive NEEDRESTART_MODE=a apt upgrade -y &&\
+                    aptitude safe-upgrade -y &&\
                     apt install -y pip ansible tar gzip wget git"
           );
         } catch (err) {
