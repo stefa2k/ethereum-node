@@ -147,6 +147,7 @@ export class NodeConnection {
                     apt install -y software-properties-common &&\
                     add-apt-repository --yes --update ppa:ansible/ansible &&\
                     apt update &&\
+                    DEBIAN_FRONTEND=noninteractive NEEDRESTART_MODE=a apt upgrade -y &&\
                     apt install -y pip ansible tar gzip wget git"
           );
         } catch (err) {
